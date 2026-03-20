@@ -1,0 +1,81 @@
+ticket_id,review_status,issue_type,assigned_queue,escalation_risk,sla_risk,confidence,needs_human_review,review_reason,recommended_next_action,suggested_response
+TICK-1002,Human Review Required,billing_issue,billing_support,medium,medium,medium,TRUE,Manual review required,Gather specific details about the invoice charges from the customer and investigate the discrepancies.,"Hi Maria, thank you for reaching out. I understand that your invoice this month appears higher than expected. I’m here to help clarify the charges for you. Could you please provide any specific line items or charges that you would like us to look into? This will help us address your concerns more effectively."
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High SLA risk,Escalate the billing issue to the billing department immediately and ensure follow-up communication within the next two hours.,"Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've experienced regarding the duplicate charges and the lack of response from our team. I understand how urgent and frustrating this situation is for you, especially given the potential escalation you’ve mentioned. 
+
+I am escalating your issue to our billing department immediately to ensure it is addressed within the next two hours. We are committed to resolving this matter swiftly to avoid any further dissatisfaction.
+
+Thank you for your patience, and I will follow up with you shortly to confirm the resolution.
+
+Best regards,
+[Your Name]  
+[Your Position]  
+[Company Name]  
+[Contact Information]"
+TICK-1002,Human Review Required,billing_issue,billing_support,medium,medium,medium,TRUE,Manual review required,Review Maria's billing details and provide the requested breakdown of charges.,"Hello Maria,
+
+Thank you for reaching out. I understand that your invoice appears higher than expected, and I'm here to help you clarify the charges. Please give me a moment to review your account details, and I'll provide a breakdown of the charges for you.
+
+If you have any specific items on the invoice that you'd like me to address, please let me know.
+
+Thank you for your patience.
+
+Best regards,
+[Your Name] from Billing Support"
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High SLA risk,"Investigate the billing issue and resolve the charges, followed by an immediate follow-up with the customer.","Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've experienced with the double charges on your account and the lack of response to your previous emails. I understand how frustrating this is, especially considering the urgency of your situation.
+
+Please rest assured that I am prioritizing this matter and will investigate the charges immediately. I will ensure that you receive a resolution as quickly as possible.
+
+Thank you for your patience, and I will follow up shortly with an update.
+
+Best regards,
+
+[Your Name]
+Billing Support Team"
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High escalation risk,Immediately escalate the ticket to the billing management team for urgent resolution.,"Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've experienced with the duplicate charges and the delay in our response. I understand how urgent this matter is, and I assure you that we are taking it very seriously.
+
+I will escalate this issue immediately to ensure it is resolved as quickly as possible. Please allow me a moment to investigate the charge discrepancies, and I will get back to you with updates shortly.
+
+Thank you for your patience. 
+
+Best regards,
+[Your Name]
+Billing Support Team"
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High escalation risk,Immediately escalate the ticket to the billing management team for urgent resolution.,"Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've experienced with the duplicate charges and the delay in our response. I understand how urgent this matter is, and I assure you that we are taking it very seriously.
+
+I will escalate this issue immediately to ensure it is resolved as quickly as possible. Please allow me a moment to investigate the charge discrepancies, and I will get back to you with updates shortly.
+
+Thank you for your patience. 
+
+Best regards,
+[Your Name]
+Billing Support Team"
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High escalation risk,Escalate the issue to the billing resolution team while maintaining communication with the customer.,"Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've faced regarding the duplicate charges and the lack of response to your previous emails. I understand how frustrating this situation is, especially as an enterprise customer. Please allow me to escalate this matter immediately and ensure it is resolved promptly. 
+
+I appreciate your patience as we address this issue, and I will keep you updated on our progress. Thank you for bringing this to our attention.
+
+Best regards,
+[Your Name]
+Billing Support Team"
+TICK-1003,Human Review Required,billing_error,billing_support,high,high,high,TRUE,High escalation risk,Escalate the ticket to a billing specialist immediately to ensure timely resolution.,"Dear Mr. Carter,
+
+I sincerely apologize for the inconvenience you've experienced with the incorrect charges on your account. I understand how urgent this matter is and appreciate your patience as we work towards a resolution. 
+
+We are currently reviewing your account to correct the billing issue and ensure that you are not charged incorrectly again. I assure you that we take this seriously and will expedite our efforts to resolve this before the SLA is breached. 
+
+Please hold on for a moment while we gather the necessary information to address this problem. I will follow up with you shortly.
+
+Thank you for bringing this to our attention.
+
+Best regards,
+[Your Name]
+Billing Support Team"

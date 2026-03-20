@@ -1,0 +1,1144 @@
+{
+  "name": "Project 5: AI Support Response Suggestions",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        -16
+      ],
+      "id": "7f7918d7-6bbc-418e-9b25-9d3a7922f0ee",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an AI assistant helping a customer support operations team classify inbound support tickets.\n\nYour task is to analyze the provided ticket data and return structured triage metadata.\n\nRules:\n- Base your answer only on the provided ticket information.\n- Do not invent policies, systems, customer history, or actions not present in the input.\n- Choose the most likely issue type, customer intent, recommended queue, and confirmed priority.\n- Use concise labels with underscores where appropriate.\n- Return valid JSON only.\n- Do not include markdown fences, commentary, or extra text.\n\nReturn this exact JSON structure:\n{\n  \"issue_type\": \"\",\n  \"intent\": \"\",\n  \"assigned_queue\": \"\",\n  \"priority_confirmed\": \"\"\n}"
+            },
+            {
+              "content": "=Classify this support ticket and return triage metadata.\n\nTicket ID: {{$json.ticket_id}}\nCreated At: {{$json.created_at}}\nCustomer Name: {{$json.customer_name}}\nCustomer Tier: {{$json.customer_tier}}\nChannel: {{$json.normalized_channel}}\nLanguage: {{$json.normalized_language}}\nSubject: {{$json.subject}}\nDescription: {{$json.description}}\nProduct Area: {{$json.product_area}}\nCurrent Priority: {{$json.current_priority}}\nNormalized Priority: {{$json.normalized_priority}}\nCustomer Context: {{$json.customer_context}}\nTicket Text: {{$json.ticket_text}}\nAttachments: {{$json.attachments_flag}}\nSLA Context: {{$json.sla_context}}\n\nReturn valid JSON only."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        -96
+      ],
+      "id": "5bc63f3d-f2e7-47cd-837a-d2afc8fbda5a",
+      "name": "OpenAI - Triage Enrichment",
+      "credentials": {
+        "openAiApi": {
+          "id": "D3Bq5fVbo9iaERbW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output[0].content[0].text;\nconst cleaned = rawText.trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -96
+      ],
+      "id": "4a893800-2b29-4337-b7b3-531a9c46a71f",
+      "name": "Parse Triage Output"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an AI assistant helping a customer support operations team identify support tickets that may escalate.\n\nYour task is to analyze the provided support ticket and return structured escalation risk metadata.\n\nYou MUST populate all fields with the best possible values based on the input.\n\nRules:\n- Base your answer only on the provided ticket information.\n- Do not leave any fields empty.\n- If the signal is weak, still choose the most likely value.\n- Use the following label ranges:\n  - sentiment: positive, neutral, negative, neutral_to_negative\n  - urgency_level: low, medium, high\n  - escalation_risk: low, medium, high\n- Provide a short explanation for escalation_reason.\n- Return valid JSON only.\n- Do not include markdown fences or extra text.\n\nReturn this exact JSON structure:\n{\n  \"sentiment\": \"\",\n  \"urgency_level\": \"\",\n  \"escalation_risk\": \"\",\n  \"escalation_reason\": \"\"\n}"
+            },
+            {
+              "content": "=Analyze this support ticket for escalation risk and return structured metadata.\n\nTicket ID: {{$json.ticket_id}}\nCustomer Name: {{$json.customer_name}}\nCustomer Tier: {{$json.customer_tier}}\nChannel: {{$json.normalized_channel}}\nLanguage: {{$json.normalized_language}}\nSubject: {{$json.subject}}\nDescription: {{$json.description}}\nProduct Area: {{$json.product_area}}\nCurrent Priority: {{$json.current_priority}}\nNormalized Priority: {{$json.normalized_priority}}\nIssue Type: {{$json.issue_type}}\nIntent: {{$json.intent}}\nAssigned Queue: {{$json.assigned_queue}}\nCustomer Context: {{$json.customer_context}}\nTicket Text: {{$json.ticket_text}}\nSLA Context: {{$json.sla_context}}\n\nReturn valid JSON only."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        -96
+      ],
+      "id": "5e73e32e-e5d9-4415-ba42-e2cbd9ecc8c8",
+      "name": "OpenAI - Escalation Risk Detection",
+      "credentials": {
+        "openAiApi": {
+          "id": "D3Bq5fVbo9iaERbW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output[0].content[0].text;\nconst cleaned = rawText.trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -96
+      ],
+      "id": "e02908c6-0a63-4fe0-bde2-54229bbadf2c",
+      "name": "Parse Escalation Output"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an AI assistant helping a customer support operations team predict whether a support ticket is at risk of missing SLA.\n\nYour task is to analyze the provided ticket and return structured SLA risk metadata.\n\nYou MUST populate all fields with the best possible values based on the input.\n\nRules:\n- Base your answer only on the provided ticket information.\n- Do not invent policies, staffing levels, backlog counts, or internal metrics not present in the input.\n- Use the available timing, urgency, escalation, and ticket context to make the best possible assessment.\n- Do not leave any fields empty.\n- If the signal is weak, still choose the most likely value.\n- Use the following label ranges:\n  - sla_risk: low, medium, high\n  - backlog_pressure: low, medium, high\n- Provide a short explanation for sla_reason.\n- Return valid JSON only.\n- Do not include markdown fences or extra text.\n\nReturn this exact JSON structure:\n{\n  \"sla_risk\": \"\",\n  \"sla_reason\": \"\",\n  \"backlog_pressure\": \"\"\n}"
+            },
+            {
+              "content": "=Analyze this support ticket for SLA breach risk and return structured metadata.\n\nTicket ID: {{$json.ticket_id}}\nCreated At: {{$json.created_at}}\nCustomer Tier: {{$json.customer_tier}}\nChannel: {{$json.normalized_channel}}\nProduct Area: {{$json.product_area}}\nCurrent Priority: {{$json.current_priority}}\nNormalized Priority: {{$json.normalized_priority}}\nTicket Age Hours: {{$json.ticket_age_hours}}\nTime Remaining to SLA Hours: {{$json.time_remaining_to_sla_hours}}\nIssue Type: {{$json.issue_type}}\nIntent: {{$json.intent}}\nAssigned Queue: {{$json.assigned_queue}}\nPriority Confirmed: {{$json.priority_confirmed}}\nSentiment: {{$json.sentiment}}\nUrgency Level: {{$json.urgency_level}}\nEscalation Risk: {{$json.escalation_risk}}\nEscalation Reason: {{$json.escalation_reason}}\nSLA Context: {{$json.sla_context}}\nTicket Text: {{$json.ticket_text}}\n\nReturn valid JSON only."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        1616,
+        -96
+      ],
+      "id": "fc5d7ac7-3e5d-4151-bfda-f7722b71cae9",
+      "name": "OpenAI - SLA Risk Detection",
+      "credentials": {
+        "openAiApi": {
+          "id": "D3Bq5fVbo9iaERbW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output[0].content[0].text;\nconst cleaned = rawText.trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        -96
+      ],
+      "id": "2da0764f-a52f-4ad6-a1f3-fde274f6fe97",
+      "name": "Parse SLA Output"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an AI assistant helping a customer support team draft response suggestions for agents.\n\nYour task is to generate a professional, context-aware suggested reply based only on the provided ticket and support intelligence fields.\n\nYou MUST populate all fields with the best possible values based on the input.\n\nSet needs_human_review to true only when the ticket is high-risk, highly sensitive, unclear, or the suggested response should not be used without human oversight.\n\nFor routine support cases with medium or low risk, clear customer intent, and a reasonable suggested response, set needs_human_review to false.\n\nDo not set needs_human_review to true simply because the customer is frustrated or because the issue requires follow-up.\n\nSet needs_human_review to true only when the case is genuinely high-risk, highly sensitive, unclear, or should not be used without human oversight.\n\nFor routine support tickets with clear intent, medium or low risk, and a safe suggested response, set needs_human_review to false.\n\nMedium escalation risk alone should not trigger human review.\nMedium SLA risk alone should not trigger human review.\nBilling clarification requests with clear next actions should usually not require human review.\n\nExamples of when needs_human_review should be true:\n- high escalation risk\n- high SLA risk\n- low confidence in the suggested response\n- legal, financial, security, or sensitive policy issues\n- unclear or contradictory ticket context\n\nExamples of when needs_human_review should be false:\n- standard billing clarification\n- password reset\n- common account questions\n- routine product guidance\n- medium-risk tickets with clear next actions\n\nRules:\n- Base your answer only on the provided ticket information.\n- Do not invent refunds, credits, timelines, policies, or actions not supported by the input.\n- Do not make promises on behalf of the company.\n- Keep the response professional, clear, and concise.\n- Use an empathetic tone when escalation risk or urgency is elevated.\n- If the issue appears sensitive, high-risk, or uncertain, set needs_human_review to true.\n- Do not leave any fields empty.\n- Use these label ranges:\n  - tone: neutral, reassuring, empathetic, urgent, empathetic_and_urgent\n  - confidence: low, medium, high\n  - needs_human_review: true or false\n- Return valid JSON only.\n- Do not include markdown fences or extra text.\n\nReturn this exact JSON structure:\n{\n  \"suggested_response\": \"\",\n  \"tone\": \"\",\n  \"response_reasoning\": \"\",\n  \"recommended_next_action\": \"\",\n  \"confidence\": \"\",\n}"
+            },
+            {
+              "content": "=Generate a support response suggestion for this ticket.\n\nTicket ID: {{$json.ticket_id}}\nCustomer Name: {{$json.customer_name}}\nCustomer Tier: {{$json.customer_tier}}\nChannel: {{$json.normalized_channel}}\nLanguage: {{$json.normalized_language}}\nSubject: {{$json.subject}}\nDescription: {{$json.description}}\nProduct Area: {{$json.product_area}}\nIssue Type: {{$json.issue_type}}\nIntent: {{$json.intent}}\nAssigned Queue: {{$json.assigned_queue}}\nCurrent Priority: {{$json.current_priority}}\nPriority Confirmed: {{$json.priority_confirmed}}\nSentiment: {{$json.sentiment}}\nUrgency Level: {{$json.urgency_level}}\nEscalation Risk: {{$json.escalation_risk}}\nEscalation Reason: {{$json.escalation_reason}}\nSLA Risk: {{$json.sla_risk}}\nSLA Reason: {{$json.sla_reason}}\nBacklog Pressure: {{$json.backlog_pressure}}\nCustomer Context: {{$json.customer_context}}\nTicket Text: {{$json.ticket_text}}\n\nReturn valid JSON only."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        2416,
+        -96
+      ],
+      "id": "9a6ec58d-902b-4869-bb67-d9e3f40763fd",
+      "name": "OpenAI - Response Suggestion Engine",
+      "credentials": {
+        "openAiApi": {
+          "id": "D3Bq5fVbo9iaERbW",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output[0].content[0].text;\nconst cleaned = rawText.trim();\nconst parsed = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2768,
+        -96
+      ],
+      "id": "a1b9d5af-2b35-40d0-9fcc-cbe842dec669",
+      "name": "Parse Response Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e19169af-c266-41a6-8d55-5de1ed662dbd",
+              "leftValue": "={{$json.needs_human_review}}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3440,
+        -16
+      ],
+      "id": "7a9b237b-bf78-4ed3-9137-2a63ecfafaf5",
+      "name": "If - Human Review Needed"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    ...$json,\n    normalized_priority:\n      $json.current_priority === 'low'\n        ? 'Low'\n        : $json.current_priority === 'normal'\n        ? 'Medium'\n        : $json.current_priority === 'high'\n        ? 'High'\n        : $json.current_priority === 'urgent'\n        ? 'Critical'\n        : 'Medium',\n\n    normalized_channel:\n      $json.source_channel === 'chat'\n        ? 'Chat'\n        : $json.source_channel === 'email'\n        ? 'Email'\n        : $json.source_channel,\n\n    normalized_language:\n      $json.language === 'en'\n        ? 'English'\n        : $json.language,\n\n    customer_context: `${$json.customer_tier} customer via ${\n      $json.source_channel === 'chat'\n        ? 'Chat'\n        : $json.source_channel === 'email'\n        ? 'Email'\n        : $json.source_channel\n    }`,\n\n    ticket_text: `Subject: ${$json.subject}. Description: ${$json.description}`,\n\n    sla_context: `Ticket age is ${$json.ticket_age_hours} hours. Time remaining to SLA is ${$json.time_remaining_to_sla_hours} hours.`,\n\n    attachments_flag: $json.attachments_present ? 'Attachments present' : 'No attachments',\n\n    priority_reasoning: `Current priority is ${$json.current_priority} based on ticket context`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        -16
+      ],
+      "id": "0ba2c36a-78a5-403b-8ccb-d993c0bcdbf4",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        592,
+        -16
+      ],
+      "id": "a21f1a22-291c-4802-825b-731f357cbd78",
+      "name": "Merge Triage Context"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        -16
+      ],
+      "id": "093510bd-8094-4729-a9c6-5e62e1d0b1ab",
+      "name": "Merge Escalation Context"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2192,
+        -16
+      ],
+      "id": "bdaf0c7a-afbf-418d-94ad-41c9cf8fa958",
+      "name": "Merge SLA Context"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2992,
+        -16
+      ],
+      "id": "40920c0c-1a29-4aba-a737-f1290213f4e8",
+      "name": "Merge Final Response Context"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d96a6a5a-781f-4055-942d-a24d9c9fcfd6",
+              "name": "ticket_id",
+              "value": "={{$json.ticket_id}}",
+              "type": "string"
+            },
+            {
+              "id": "122b4634-8467-4aa5-b791-1b75cf36b0fb",
+              "name": "review_status",
+              "value": "Ready for Agent Use",
+              "type": "string"
+            },
+            {
+              "id": "62b98411-94f6-4d9d-82cd-1b5cc0183db0",
+              "name": "issue_type",
+              "value": "={{$json.issue_type}}",
+              "type": "string"
+            },
+            {
+              "id": "ff99dfa5-ccf0-49a9-b680-bf377876563d",
+              "name": "=assigned_queue",
+              "value": "={{$json.assigned_queue}}",
+              "type": "string"
+            },
+            {
+              "id": "cd6f8ba9-2451-4b1d-9605-32d1d92e30a1",
+              "name": "escalation_risk",
+              "value": "={{$json.escalation_risk}}",
+              "type": "string"
+            },
+            {
+              "id": "41f6df7f-8b42-4563-b052-91c94e816be6",
+              "name": "sla_risk",
+              "value": "={{$json.sla_risk}}",
+              "type": "string"
+            },
+            {
+              "id": "1dcf0e5a-f62d-4cab-9ad0-621e717fd9f7",
+              "name": "=confidence",
+              "value": "={{$json.confidence}}",
+              "type": "string"
+            },
+            {
+              "id": "55e22110-34fa-461b-880a-7327e6855e8f",
+              "name": "suggested_response",
+              "value": "={{$json.suggested_response}}",
+              "type": "string"
+            },
+            {
+              "id": "dc7efbff-3f91-4387-8353-126759a14b89",
+              "name": "=recommended_next_action",
+              "value": "={{$json.recommended_next_action}}",
+              "type": "string"
+            },
+            {
+              "id": "09d17ae0-4b8b-409f-9f9d-b3a026c1f7dc",
+              "name": "needs_human_review",
+              "value": "={{$json.needs_human_review}}",
+              "type": "string"
+            },
+            {
+              "id": "c2bf4c21-677a-4cb6-952d-78557ea46886",
+              "name": "review_reason",
+              "value": "={{$json.review_reason}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3664,
+        80
+      ],
+      "id": "ec3ce00e-f21f-4c73-94ef-9b7f9cecc6c6",
+      "name": "Set - Standard Suggestion Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1312618f-6119-42dd-915c-cdb2e936810f",
+              "name": "ticket_id",
+              "value": "={{$json.ticket_id}}",
+              "type": "string"
+            },
+            {
+              "id": "ea474088-bc9b-4c96-a857-3a3852dac966",
+              "name": "review_status",
+              "value": "Human Review Required",
+              "type": "string"
+            },
+            {
+              "id": "37fae0a8-4894-4ac9-ac97-8781311b8f3b",
+              "name": "=issue_type",
+              "value": "={{$json.issue_type}}",
+              "type": "string"
+            },
+            {
+              "id": "2244d0c9-d2f7-4bcb-94ef-1a08a12b8ff3",
+              "name": "=assigned_queue",
+              "value": "={{$json.assigned_queue}}",
+              "type": "string"
+            },
+            {
+              "id": "19d5e709-1b3f-4c81-99ba-2c6ab52073b0",
+              "name": "escalation_risk",
+              "value": "={{$json.escalation_risk}}",
+              "type": "string"
+            },
+            {
+              "id": "9215612b-d601-4fa4-aa72-c12b5b954b5e",
+              "name": "=sla_risk",
+              "value": "={{$json.sla_risk}}",
+              "type": "string"
+            },
+            {
+              "id": "d2ae116b-15eb-483a-a6c5-2dc6709c5294",
+              "name": "=confidence",
+              "value": "={{$json.confidence}}",
+              "type": "string"
+            },
+            {
+              "id": "a8db642c-d2c5-4095-bc3a-f205961f4e9c",
+              "name": "suggested_response",
+              "value": "={{$json.suggested_response}}",
+              "type": "string"
+            },
+            {
+              "id": "36936051-b49c-4ef8-acb0-573d095cea03",
+              "name": "recommended_next_action",
+              "value": "={{$json.recommended_next_action}}",
+              "type": "string"
+            },
+            {
+              "id": "a2d43eb2-4700-4b13-8b97-717c82893a44",
+              "name": "review_reason",
+              "value": "={{$json.review_reason}}",
+              "type": "string"
+            },
+            {
+              "id": "15a76e01-b4f5-4906-87ed-15fe37953d2b",
+              "name": "confidence",
+              "value": "={{$json.confidence}}",
+              "type": "string"
+            },
+            {
+              "id": "e1e93e5c-7f20-434c-a60d-03b7ceb6dce1",
+              "name": "=needs_human_review",
+              "value": "={{$json.needs_human_review}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3664,
+        -112
+      ],
+      "id": "3c029085-1fdb-48a8-815e-d64d4e2f90d5",
+      "name": "Set - Human Review Output"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ",
+          "mode": "list",
+          "cachedResultName": "Dummy Data - Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1102663235,
+          "mode": "list",
+          "cachedResultName": "Human Review Cases",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ/edit#gid=1102663235"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{$json.ticket_id}}",
+            "review_status": "={{$json.review_status}}",
+            "issue_type": "={{$json.issue_type}}",
+            "assigned_queue": "={{$json.assigned_queue}}",
+            "escalation_risk": "={{$json.escalation_risk}}",
+            "sla_risk": "={{$json.sla_risk}}",
+            "confidence": "={{$json.confidence}}",
+            "needs_human_review": "={{$json.needs_human_review}}",
+            "review_reason": "={{$json.review_reason}}",
+            "recommended_next_action": "={{$json.recommended_next_action}}",
+            "suggested_response": "={{$json.suggested_response}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "assigned_queue",
+              "displayName": "assigned_queue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "escalation_risk",
+              "displayName": "escalation_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sla_risk",
+              "displayName": "sla_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_human_review",
+              "displayName": "needs_human_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_reason",
+              "displayName": "review_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommended_next_action",
+              "displayName": "recommended_next_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "suggested_response",
+              "displayName": "suggested_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3888,
+        -112
+      ],
+      "id": "19d848fc-7f3b-4358-ba16-f4891b1c2c7f",
+      "name": "Google Sheets - Log Human Review Case",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LVNXkiWCtMmqZPCG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ",
+          "mode": "list",
+          "cachedResultName": "Dummy Data - Tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1035771371,
+          "mode": "list",
+          "cachedResultName": "Standard Suggestions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IyvsPJy2FyqY3jXaXNNeVGxQybi-7bZhoH6u-VPJcdQ/edit#gid=1035771371"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{$json.ticket_id}}",
+            "review_status": "={{$json.review_status}}",
+            "issue_type": "={{$json.issue_type}}",
+            "assigned_queue": "={{$json.assigned_queue}}",
+            "escalation_risk": "={{$json.escalation_risk}}",
+            "sla_risk": "={{$json.sla_risk}}",
+            "confidence": "={{$json.confidence}}",
+            "needs_human_review": "={{$json.needs_human_review}}",
+            "review_reason": "={{$json.review_reason}}",
+            "recommended_next_action": "={{$json.recommended_next_action}}",
+            "suggested_response": "={{$json.suggested_response}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "assigned_queue",
+              "displayName": "assigned_queue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "escalation_risk",
+              "displayName": "escalation_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sla_risk",
+              "displayName": "sla_risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_human_review",
+              "displayName": "needs_human_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_reason",
+              "displayName": "review_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommended_next_action",
+              "displayName": "recommended_next_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "suggested_response",
+              "displayName": "suggested_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3888,
+        80
+      ],
+      "id": "33b57a6d-fc96-42d7-bb3d-f24ae9162a3c",
+      "name": "Google Sheets - Log Standard Suggestion",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LVNXkiWCtMmqZPCG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      ticket_id: \"TICK-1002\",\n      created_at: \"2026-03-08T09:10:00Z\",\n      customer_name: \"Maria Lopez\",\n      customer_tier: \"pro\",\n      source_channel: \"chat\",\n      language: \"en\",\n      subject: \"Invoice looks incorrect\",\n      description: \"My invoice this month seems higher than expected and I need help understanding the charges.\",\n      product_area: \"billing\",\n      current_priority: \"normal\",\n      attachments_present: false,\n      ticket_age_hours: 12,\n      time_remaining_to_sla_hours: \"10\"\n    }\n  },\n  {\n    json: {\n      ticket_id: \"TICK-1003\",\n      created_at: \"2026-03-08T18:45:00Z\",\n      customer_name: \"James Carter\",\n      customer_tier: \"enterprise\",\n      source_channel: \"email\",\n      language: \"en\",\n      subject: \"URGENT: Incorrect charges and account suspension threat\",\n      description: \"I was charged twice this month and your team has not responded to my last two emails. If this is not resolved immediately, I will escalate this legally and cancel our contract. This is unacceptable.\",\n      product_area: \"billing\",\n      current_priority: \"high\",\n      attachments_present: true,\n      ticket_age_hours: 36,\n      time_remaining_to_sla_hours: \"2\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        -16
+      ],
+      "id": "57f31563-8a99-4b7d-a560-2587cd0e5b39",
+      "name": "Set New Tickets"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        4112,
+        -16
+      ],
+      "id": "c505af99-60aa-425e-a924-c22065e4c6f2",
+      "name": "Merge Outputs"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const escalationRisk = ($json.escalation_risk || '').toLowerCase();\nconst slaRisk = ($json.sla_risk || '').toLowerCase();\nconst confidence = ($json.confidence || '').toLowerCase();\nconst customerTier = ($json.customer_tier || '').toLowerCase();\n\nconst needsHumanReview =\n  escalationRisk === 'high' ||\n  slaRisk === 'high' ||\n  confidence === 'low';\n\nconst reviewReason =\n  escalationRisk === 'high'\n    ? 'High escalation risk'\n    : slaRisk === 'high'\n    ? 'High SLA risk'\n    : confidence === 'low'\n    ? 'Low AI confidence'\n    : 'No review required';\n\nreturn {\n  json: {\n    ...$json,\n    needs_human_review: needsHumanReview,\n    review_reason: reviewReason\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        -16
+      ],
+      "id": "6f4aba89-58bc-4f9a-a763-f2573c47c323",
+      "name": "Compute Review Decision"
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all();\n\nconst total = all.length;\nconst human = all.filter(i => i.json.review_status === 'Human Review Required').length;\nconst auto = all.filter(i => i.json.review_status === 'Ready for Agent Use').length;\n\nreturn [\n  {\n    json: {\n      total_tickets: total,\n      human_review_count: human,\n      auto_processed_count: auto,\n      automation_rate: total ? auto / total : 0\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4320,
+        -16
+      ],
+      "id": "b4434ebb-d17b-42d7-9f5f-55351747986a",
+      "name": "Routing Summary"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set New Tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Triage Enrichment": {
+      "main": [
+        [
+          {
+            "node": "Parse Triage Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Triage Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Triage Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI - Escalation Risk Detection": {
+      "main": [
+        [
+          {
+            "node": "Parse Escalation Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Escalation Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Escalation Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI - SLA Risk Detection": {
+      "main": [
+        [
+          {
+            "node": "Parse SLA Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse SLA Output": {
+      "main": [
+        [
+          {
+            "node": "Merge SLA Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI - Response Suggestion Engine": {
+      "main": [
+        [
+          {
+            "node": "Parse Response Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response Output": {
+      "main": [
+        [
+          {
+            "node": "Merge Final Response Context",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Merge Triage Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "OpenAI - Triage Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Triage Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Escalation Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "OpenAI - Escalation Risk Detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Escalation Context": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - SLA Risk Detection",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge SLA Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge SLA Context": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Response Suggestion Engine",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Final Response Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Final Response Context": {
+      "main": [
+        [
+          {
+            "node": "Compute Review Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Human Review Needed": {
+      "main": [
+        [
+          {
+            "node": "Set - Human Review Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set - Standard Suggestion Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Human Review Output": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Human Review Case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Standard Suggestion Output": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Standard Suggestion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set New Tickets": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Log Human Review Case": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Log Standard Suggestion": {
+      "main": [
+        [
+          {
+            "node": "Merge Outputs",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Outputs": {
+      "main": [
+        [
+          {
+            "node": "Routing Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Review Decision": {
+      "main": [
+        [
+          {
+            "node": "If - Human Review Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "715a6f90-ac33-48d2-9ed2-cf6411564650",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c92027905a1e18f4de6a84dda63aebe0847ce19b98965b0a947a038cf40b6d42"
+  },
+  "id": "7E7HStw1z8DYAsbe",
+  "tags": []
+}
